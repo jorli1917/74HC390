@@ -1,0 +1,339 @@
+MEM_SOURCE_15;
+
+PINDEF
+//
+1MR     = I, BIN, (2)
+1nCP0   = I, BIN, (1)
+1nCP1   = I, BIN, (4)
+
+1Q0     = O, BIN, (3)
+1Q1     = O, BIN, (5)
+1Q2     = O, BIN, (6)
+1Q3     = O, BIN, (7)
+
+
+2MR     = I, BIN, (46)
+2nCP0   = I, BIN, (47)
+2nCP1   = I, BIN, (44)
+
+2Q0     = O, BIN, (45)
+2Q1     = O, BIN, (43)
+2Q2     = O, BIN, (42)
+2Q3     = O, BIN, (41)
+
+
+
+
+
+
+PIN_TO_CHANNEL
+
+1..7 = 1..7
+9..15 = 41..47
+
+
+
+MAIN_F
+
+//test leak current IIL
+START_INDEX(1)
+            {MR CP0 CP1 A BCD   MR CP0 CP1 A BCD}
+    INC     (X   1   1  H HHH   1   1   1  H HHH)   //test H or X
+    INC     (1   X   1  X XXX   1   1   1  X XXX)
+    INC     (1   1   X  X XXX   1   1   1  X XXX)
+    INC     (1   1   1  X XXX   X   1   1  X XXX)
+    INC     (1   1   1  X XXX   1   X   1  X XXX)
+    HALT    (1   1   1  X XXX   1   1   X  X XXX)
+
+
+//test leak current IIH
+START_INDEX(2)
+            {MR CP0 CP1 A BCD   MR CP0 CP1 A BCD}
+    INC     (X   0   0  L LLL   0   0   0  L LLL)   //test L or X
+    INC     (0   X   0  X XXX   0   0   0  X XXX)
+    INC     (0   0   X  X XXX   0   0   0  X XXX)
+    INC     (0   0   0  X XXX   X   0   0  X XXX)
+    INC     (0   0   0  X XXX   0   X   0  X XXX)
+    HALT    (1   0   0  X XXX   0   0   X  X XXX)
+
+//supply current static
+START_INDEX(3)
+            {MR CP0 CP1 A BCD   MR CP0 CP1 A BCD}
+    INC     (X   X   X  X XXX   X   X   X  X XXX)
+    INC     (1   0   0  X XXX   1   0   0  X XXX)     //MR=1
+    HALT    (1   0   0  L LLL   1   0   0  L LLL)     //Q0123 = L
+
+
+
+START_INDEX(4)
+            {MR CP0 CP1 A BCD   MR CP0 CP1 A BCD}
+    INC     (X   X   X  X XXX   X   X   X  X XXX)     //MR=0, all CP=0
+    INC     (1   0   0  L LLL   1   0   0  L LLL)     //MR=1 
+    
+    INC     (0   1   1  H HLL   0   1   1  H HLL)     //1CP0 edge, Q0:0->1
+    INC     (0   1   1  L LHX   0   1   1  L LHX)
+    
+    INC     (0   1   1  H HHX   0   1   1  H HHX)     //1CP0 edge, Q0:1->0; 1CP1 edge, Q1:0->1
+    INC     (0   1   1  L LLH   0   1   1  L LLH)  
+    HALT    (0   1   1  H LLL   0   1   1  H LLL)
+
+
+
+//V input
+START_INDEX(5)
+            {MR CP0 CP1 A BCD   MR CP0 CP1 A BCD}
+    INC     (1   0   0  X XXX   1   0   0  X XXX)       //reset
+    INC     (0   0   0  L LLL   0   0   0  L LLL)
+
+    INC     (0   1   0  L LLL   0   1   0  L LLL)       //devide by 2
+    INC     (0   1   0  H LLL   0   1   0  H LLL)     
+    INC     (0   0   0  L LLL   0   0   0  L LLL)
+
+    INC     (0   0   1  L LLL   0   0   1  L LLL)       //devide by 5
+    INC     (0   0   1  L HLL   0   0   1  L HLL)
+    INC     (0   0   1  L LHL   0   0   1  L LHL)     
+    INC     (0   0   1  L HHL   0   0   1  L HHL)
+    HALT    (0   0   1  L LLH   0   0   1  L LLH)       //need BCD
+
+
+//VOH
+START_INDEX(6)   {Q0:3,45}
+            {MR CP0 CP1 A BCD   MR CP0 CP1 A BCD}
+    INC     (1   0   0  X XXX   1   0   0  X XXX)       //reset
+    INC     (0   0   0  L LLL   0   0   0  L LLL)
+
+    INC     (0   1   0  L LLL   0   1   0  L LLL)       //devide by 2
+    HALT    (0   0   0  H LLL   0   0   0  H LLL)
+
+
+//VOH
+START_INDEX(7)   {Q1:5,43}
+            {MR CP0 CP1 A BCD   MR CP0 CP1 A BCD}
+    INC     (1   0   0  X XXX   1   0   0  X XXX)       //reset
+    INC     (0   0   0  L LLL   0   0   0  L LLL)
+
+//  INC     (0   0   1  L LLL   0   0   1  L LLL)       //devide by 2
+    HALT    (0   0   1  L HLL   0   0   1  L HLL)
+
+
+//VOH
+START_INDEX(8)   {Q2:6,42}
+            {MR CP0 CP1 A BCD   MR CP0 CP1 A BCD}
+    INC     (1   0   0  X XXX   1   0   0  X XXX)       //reset
+    INC     (0   0   0  L LLL   0   0   0  L LLL)
+
+    INC     (0   0   1  L LLL   0   0   1  L LLL)       //devide by 2
+    INC     (0   0   1  L HLL   0   0   1  L HLL)
+    HALT    (0   0   0  L LHL   0   0   0  L LHL)
+
+//VOH
+START_INDEX(9)   {Q3:7,41}
+            {MR CP0 CP1 A BCD   MR CP0 CP1 A BCD}
+    INC     (1   0   0  X XXX   1   0   0  X XXX)       //reset
+    INC     (0   0   0  L LLL   0   0   0  L LLL)
+
+    INC     (0   0   1  L LLL   0   0   1  L LLL)       //devide by 2
+    INC     (0   0   1  L HLL   0   0   1  L HLL)
+    INC     (0   0   1  L LHL   0   0   1  L LHL)
+    INC     (0   0   1  L HHL   0   0   1  L HHL)
+    HALT    (0   0   0  L LLH   0   0   0  L LLH)
+
+
+
+
+//VOL
+START_INDEX(10)
+            {MR CP0 CP1 A BCD   MR CP0 CP1 A BCD}
+    INC     (X   X   X  X XXX   X   X   X  X XXX)
+    INC     (1   1   1  X XXX   1   1   1  X XXX)       //reset
+    LDF     (0   1   1  L LLL   0   1   1  L LLL)
+a   INC     (0   1   1  L LLL   0   1   1  L LLL)
+    INC     (0   1   1  L LLL   0   1   1  L LLL)
+    jmp,a   (0   1   1  L LLL   0   1   1  L LLL)
+    HALT    (0   1   1  L LLL   0   1   1  L LLL)
+
+
+
+//FUN-TEST
+
+
+
+//tphl,NRZ0
+START_INDEX(11)
+            {MR CP0 CP1 A BCD   MR CP0 CP1 A BCD}
+    INC     (1   0   0  X XXX   1   0   0  X XXX)       //reset
+    INC     (0   0   0  L LLL   0   0   0  L LLL)
+    INC     (0   1   0  L LLL   0   1   0  L LLL)    
+    HALT    (0   0   0  H LLL   0   0   0  H LLL)
+
+//CLKA -> A
+START_INDEX(12)
+            {MR CP0 CP1 A BCD   MR CP0 CP1 A BCD}
+//  INC     (0   1   0  H LLL   0   1   0  H LLL)       //devide by 2
+    HALT    (0   1   0  L LLL   0   0   0  L LLL)
+
+
+//CLKB -> B
+START_INDEX(13)
+            {MR CP0 CP1 A BCD   MR CP0 CP1 A BCD}
+    INC     (1   0   0  X XXX   1   0   0  X XXX)       //reset
+    INC     (0   0   0  L LLL   0   0   0  L LLL)
+    HALT    (0   0   1  L HLL   0   0   1  L HLL)    
+
+
+START_INDEX(14)
+            {MR CP0 CP1 A BCD   MR CP0 CP1 A BCD}
+    HALT    (0   0   1  L LLL   0   0   0  L LLL)
+
+
+//CLKB -> C
+START_INDEX(15)
+            {MR CP0 CP1 A BCD   MR CP0 CP1 A BCD}
+    INC     (1   0   0  X XXX   1   0   0  X XXX)       //reset
+    INC     (0   0   0  L LLL   0   0   0  L LLL)
+    INC     (0   0   1  L HLL   0   0   1  L HLL) 
+    INC     (0   0   1  L LHL   0   0   1  L HLL)
+    HALT    (0   0   1  L HHL   0   0   1  L HLL)   
+
+
+START_INDEX(16)
+            {MR CP0 CP1 A BCD   MR CP0 CP1 A BCD}
+    HALT    (0   0   1  L LLH   0   0   0  L LLL)
+
+
+//CLKB -> D
+START_INDEX(17)
+            {MR CP0 CP1 A BCD   MR CP0 CP1 A BCD}
+    INC     (1   0   0  X XXX   1   0   0  X XXX)       //reset
+    INC     (0   0   0  L LLL   0   0   0  L LLL)
+    INC     (0   0   1  L HLL   0   0   1  L HLL) 
+    INC     (0   0   1  L LHL   0   0   1  L HLL)
+    INC     (0   0   1  L HHL   0   0   1  L HLL)   
+    HALT    (0   0   1  L LLH   0   0   0  L LLL)
+
+START_INDEX(18)
+            {MR CP0 CP1 A BCD   MR CP0 CP1 A BCD}
+    HALT    (0   0   1  L LLL   0   0   0  L LLL)
+
+
+
+//CLKA -> D
+//CONNECT A TO CLKB
+START_INDEX(19)
+            {MR CP0 CP1 A BCD   MR CP0 CP1 A BCD}
+    INC     (1   0   X  X XXX   1   0   0  X XXX)       //reset
+    INC     (0   0   X  L LLL   0   0   0  L LLL)
+    INC     (0   1   X  H LLL   0   0   1  L HLL) 
+    INC     (0   1   X  L HLL   0   0   1  L HLL)
+    INC     (0   1   X  H HLL   0   0   1  L HLL)   
+    INC     (0   1   X  L LHL   0   0   0  L LLL)
+    INC     (0   1   X  H LHL   0   0   0  L LLL)
+    INC     (0   1   X  L HHL   0   0   0  L LLL)
+    INC     (0   1   X  H HHL   0   0   0  L LLL)
+    INC     (0   1   X  L LLH   0   0   0  L LLL)
+    HALT    (0   1   X  H LLH   0   0   0  L LLL)
+
+
+START_INDEX(20)
+            {MR CP0 CP1 A BCD   MR CP0 CP1 A BCD}
+    HALT    (0   1   X  L LLL   0   0   0  L LLL)
+
+
+
+//MR -> a
+//first run 11
+START_INDEX(21)
+            {MR CP0 CP1 A BCD   MR CP0 CP1 A BCD}
+    HALT    (1   0   0  L LLL   0   0   0  L LLL)
+
+
+
+
+//tplh,NRZ0
+//CP0 -> A
+START_INDEX(22)
+            {MR CP0 CP1 A BCD   MR CP0 CP1 A BCD}
+    INC     (1   0   0  X XXX   1   0   0  X XXX)       //reset
+    HALT    (0   0   0  L LLL   0   0   0  L LLL)
+
+ 
+START_INDEX(23)
+            {MR CP0 CP1 A BCD   MR CP0 CP1 A BCD}
+//  INC     (0   1   0  L LLL   0   1   0  L LLL)       //devide by 2
+    HALT    (0   1   0  H LLL   0   1   0  H LLL)
+
+
+//CP1 -> B
+START_INDEX(24)
+            {MR CP0 CP1 A BCD   MR CP0 CP1 A BCD}
+    INC     (1   0   0  X XXX   1   0   0  X XXX)       //reset
+    HALT    (0   0   0  L LLL   0   0   0  L LLL)
+
+ 
+START_INDEX(25)
+            {MR CP0 CP1 A BCD   MR CP0 CP1 A BCD}
+    HALT    (0   0   1  L HLL   0   1   0  H LLL)
+
+
+//CP1 -> C
+START_INDEX(26)
+            {MR CP0 CP1 A BCD   MR CP0 CP1 A BCD}
+    INC     (1   0   0  X XXX   1   0   0  X XXX)       //reset
+    INC     (0   0   0  L LLL   0   0   0  L LLL)
+    INC     (0   0   1  L HLL   0   0   0  L LLL)
+    INC     (0   0   1  L LHL   0   0   0  L LLL)
+    HALT    (0   0   1  L HHL   0   0   0  L LLL)
+
+ 
+START_INDEX(27)
+            {MR CP0 CP1 A BCD   MR CP0 CP1 A BCD}
+    HALT    (0   0   1  L LLH   0   1   0  H LLL)
+
+
+//CP1 -> D
+START_INDEX(28)
+            {MR CP0 CP1 A BCD   MR CP0 CP1 A BCD}
+    INC     (1   0   0  X XXX   1   0   0  X XXX)       //reset
+    INC     (0   0   0  L LLL   0   0   0  L LLL)
+    INC     (0   0   1  L HLL   0   0   0  L LLL)
+    INC     (0   0   1  L LHL   0   0   0  L LLL)
+    INC     (0   0   1  L HHL   0   0   0  L LLL)
+    HALT    (0   0   1  L LLH   0   1   0  H LLL)
+    
+ 
+START_INDEX(29)
+            {MR CP0 CP1 A BCD   MR CP0 CP1 A BCD}
+    HALT    (0   0   1  L LLL   0   1   0  H LLL)
+
+
+//CP0 -> D
+//CONNECT A TO CLKB
+START_INDEX(30)
+            {MR CP0 CP1 A BCD   MR CP0 CP1 A BCD}
+    INC     (1   0   X  X XXX   1   0   0  X XXX)       //reset
+    INC     (0   0   X  L LLL   0   0   0  L LLL)
+    INC     (0   1   X  H LLL   0   0   1  L HLL) 
+    INC     (0   1   X  L HLL   0   0   1  L HLL)
+    INC     (0   1   X  H HLL   0   0   1  L HLL)   
+    INC     (0   1   X  L LHL   0   0   0  L LLL)
+    INC     (0   1   X  H LHL   0   0   0  L LLL)
+    INC     (0   1   X  L HHL   0   0   0  L LLL)
+    HALT    (0   1   X  H HHL   0   0   0  L LLL)
+    
+ 
+START_INDEX(31)
+            {MR CP0 CP1 A BCD   MR CP0 CP1 A BCD}
+    HALT    (0   1   X  L LLH   0   0   0  L LLL)
+
+
+
+
+
+//ttlh
+//run INDEX(9) and (14)
+
+//tthl
+//run INDEX(7) and (12)
+
+
+ END.
